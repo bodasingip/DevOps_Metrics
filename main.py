@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
   # Set up the evaluation context. This context should appear on your LaunchDarkly contexts
   # dashboard soon after you run the demo.
-  context = Context.builder('Addition-user-key').name('Praveen').build()
+  context = Context.builder('Substraction-user-key').name('Santosh').build()
 
   flag_value = ldclient.get().variation(feature_flag_key, context, False)
 
