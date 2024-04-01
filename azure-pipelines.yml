@@ -8,6 +8,9 @@ trigger: none
 pool:
   vmImage: windows-latest
 
+variables:
+- group: LaunchDarkly-VG
+
 jobs:
 - job: Demo
   steps:
@@ -15,19 +18,29 @@ jobs:
       $Id = $(git rev-parse HEAD)
       Write-Output "$Id"
       $hashId = $Id.Remove($Id.Length – 34)
-      Write-Host "##vso[task.setvariable variable=commitId;]hashId"
+      Write-Host "##vso[task.setvariable variable=commitId]$hashId"
     displayName: 'PowerShell Script'
 
   - powershell: |
-      $body = @{
-          "projectKey": "rp-eap-test-project",
-          "environmentKey": "test",
-          "applicationKey": "login-service",
-          "version": "$(commitId)",
-          "eventType": "Started"
+      Write-Host "$(commitId)"
+    displayName: 'PowerShell Script'
+
+  - powershell: |
+      $headers = @{
+        "Authorization" = "$(apiKeyLD)"
+        "Content-Type" = "application/json"
       }
-      $LoginResponse = Invoke-RestMethod -Uri 'https://app.launchdarkly.com/api/v2/accelerate/deployment-events' -Method 'POST' -Body $body -ContentType 'application/json' -Headers @{"Authorization" = "api-f4face29-5244-4ec0-9d2e-3386e4f76287" }
-      $LoginResponse.statuscode
+      $json = '{
+          "projectKey": "$(projectKey)",
+          "environmentKey": "$(environmentKey)",
+          "applicationKey": "$(applicationKey)",
+          "version": "$(commitId)",
+          "eventType": "$(eventTypeStrt)"
+      }'
+      $headers
+      $json
+      $response = Invoke-WebRequest -Uri 'https://app.launchdarkly.com/api/v2/accelerate/deployment-events' -Method 'POST' -Body $json -Headers $headers
+      write-output "Status Code : " $response.statuscode
     displayName: 'Build Started Script'
 
   - script: echo Hello, world!
