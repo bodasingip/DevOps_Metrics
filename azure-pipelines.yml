@@ -19,18 +19,14 @@ jobs:
     displayName: 'PowerShell Script'
 
   - powershell: |
-      $LoginParameters = @{
-      Uri             = 'https://app.launchdarkly.com/api/v2/accelerate/deployment-events'
-      Method          = 'POST'
-      Body            = @{
+      $body = @{
           "projectKey": "rp-eap-test-project",
           "environmentKey": "test",
           "applicationKey": "login-service",
           "version": "$(commitId)",
           "eventType": "Started"
-              }
-            }
-      $LoginResponse = Invoke-WebRequest @LoginParameters -ContentType 'application/json' -Headers @{"Authorization" = "api-f4face29-5244-4ec0-9d2e-3386e4f76287" }
+      }
+      $LoginResponse = Invoke-RestMethod -Uri 'https://app.launchdarkly.com/api/v2/accelerate/deployment-events' -Method 'POST' -Body $body -ContentType 'application/json' -Headers @{"Authorization" = "api-f4face29-5244-4ec0-9d2e-3386e4f76287" }
       $LoginResponse.statuscode
     displayName: 'Build Started Script'
 
