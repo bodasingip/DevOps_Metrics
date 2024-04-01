@@ -19,11 +19,11 @@ jobs:
       Write-Output "$Id"
       $hashId = $Id.Remove($Id.Length – 34)
       Write-Host "##vso[task.setvariable variable=commitId]$hashId"
-    displayName: 'PowerShell Script'
+    displayName: 'Getting Commit Id'
 
   - powershell: |
       Write-Host "$(commitId)"
-    displayName: 'PowerShell Script'
+    displayName: 'CommitId Viewing'
 
   - powershell: |
       $headers = @{
@@ -39,9 +39,9 @@ jobs:
       }'
       $headers
       $json
-      $response = Invoke-WebRequest -Uri 'https://app.launchdarkly.com/api/v2/accelerate/deployment-events' -Method 'POST' -Body $json -Headers $headers
+      $response = Invoke-WebRequest -Uri "$(uri)" -Method 'POST' -Body $json -Headers $headers
       write-output "Status Code : " $response.statuscode
-    displayName: 'Build Started Script'
+    displayName: 'Deployment Started Script'
 
   - script: echo Hello, world!
     displayName: 'Run a one-line script'
@@ -50,3 +50,47 @@ jobs:
       echo Add other tasks to build, test, and deploy your project.
       echo See https://aka.ms/yaml
     displayName: 'Run a multi-line script'
+  
+  - powershell: |
+      Start-Sleep -Seconds 120
+    displayName: 'PowerShell Script'
+
+  - powershell: |
+      $headers = @{
+        "Authorization" = "$(apiKeyLD)"
+        "Content-Type" = "application/json"
+      }
+      $json = '{
+          "projectKey": "$(projectKey)",
+          "environmentKey": "$(environmentKey)",
+          "applicationKey": "$(applicationKey)",
+          "version": "$(commitId)",
+          "eventType": "$(eventTypeFinish)"
+      }'
+      $headers
+      $json
+      $response = Invoke-WebRequest -Uri "$(uri)" -Method 'POST' -Body $json -Headers $headers
+      write-output "Status Code : " $response.statuscode
+    displayName: 'Deployment Finished Script'
+
+- job: Failed
+  dependsOn: Demo
+  condition: failed()
+  steps:
+  - powershell: |
+      $headers = @{
+        "Authorization" = "$(apiKeyLD)"
+        "Content-Type" = "application/json"
+      }
+      $json = '{
+          "projectKey": "$(projectKey)",
+          "environmentKey": "$(environmentKey)",
+          "applicationKey": "$(applicationKey)",
+          "version": "$(commitId)",
+          "eventType": "$(eventTypeStrt)"
+      }'
+      $headers
+      $json
+      $response = Invoke-WebRequest -Uri "$(uri)" -Method 'POST' -Body $json -Headers $headers
+      write-output "Status Code : " $response.statuscode
+    displayName: 'Deployment Failed Script'
