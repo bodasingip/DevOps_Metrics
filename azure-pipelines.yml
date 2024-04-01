@@ -44,6 +44,10 @@ jobs:
       write-output "Status Code : " $response.statuscode
     displayName: 'Deployment Started Script'
 
+  - powershell: |
+      Start-Sleep -Seconds 30
+    displayName: 'PowerShell Script'
+
   - script: echo Hello, world!
     displayName: 'Run a one-line script'
 
