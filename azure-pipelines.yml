@@ -3,17 +3,41 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-trigger:
-- main
+trigger: none
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: windows-latest
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+jobs:
+- job: Demo
+  steps:
+  - powershell: |
+      $Id = $(git rev-parse HEAD)
+      Write-Output "$Id"
+      $hashId = $Id.Remove($Id.Length – 34)
+      Write-Host "##vso[task.setvariable variable=commitId;]hashId"
+    displayName: 'PowerShell Script'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+  - powershell: |
+      $LoginParameters = @{
+      Uri             = 'https://app.launchdarkly.com/api/v2/accelerate/deployment-events'
+      Method          = 'POST'
+      Body            = @{
+          "projectKey": "rp-eap-test-project",
+          "environmentKey": "test",
+          "applicationKey": "login-service",
+          "version": "$(commitId)",
+          "eventType": "Started"
+              }
+            }
+      $LoginResponse = Invoke-WebRequest @LoginParameters -ContentType 'application/json' -Headers @{"Authorization" = "api-f4face29-5244-4ec0-9d2e-3386e4f76287" }
+      $LoginResponse.statuscode
+    displayName: 'Build Started Script'
+
+  - script: echo Hello, world!
+    displayName: 'Run a one-line script'
+
+  - script: |
+      echo Add other tasks to build, test, and deploy your project.
+      echo See https://aka.ms/yaml
+    displayName: 'Run a multi-line script'
