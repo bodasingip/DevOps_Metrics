@@ -18,7 +18,7 @@ jobs:
       $Id = $(git rev-parse HEAD)
       Write-Output "$Id"
       $hashId = $Id.Remove($Id.Length – 34)
-      Write-Host "##vso[task.setvariable variable=commitId;isOutput=true]]$hashId"
+      Write-Host "##vso[task.setvariable variable=commitId;isOutput=true]$hashId"
     displayName: 'Getting Commit Id'
     name: Id
 
