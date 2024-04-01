@@ -23,7 +23,7 @@ jobs:
     name: Id
 
   - powershell: |
-      Write-Host "$(commitId)"
+      Write-Host "$(Id.commitId)"
     displayName: 'CommitId Viewing'
 
   - powershell: |
@@ -35,7 +35,7 @@ jobs:
           "projectKey": "$(projectKey)",
           "environmentKey": "$(environmentKey)",
           "applicationKey": "$(applicationKey)",
-          "version": "$(commitId)",
+          "version": "$(Id.commitId)",
           "eventType": "$(eventTypeStrt)"
       }'
       $headers
@@ -69,7 +69,7 @@ jobs:
           "projectKey": "$(projectKey)",
           "environmentKey": "$(environmentKey)",
           "applicationKey": "$(applicationKey)",
-          "version": "$(commitId)",
+          "version": "$(Id.commitId)",
           "eventType": "$(eventTypeFinish)"
       }'
       $headers
@@ -83,7 +83,7 @@ jobs:
   condition: failed()
 
   variables:
-    varId: dependencies.Demo.outputs['Id.commitId'] 
+    varId: $[ dependencies.Demo.outputs['Id.commitId'] ]
   steps:
   - powershell: |
       $headers = @{
@@ -95,7 +95,7 @@ jobs:
           "environmentKey": "$(environmentKey)",
           "applicationKey": "$(applicationKey)",
           "version": "$(varId)",
-          "eventType": "$(eventTypeStrt)"
+          "eventType": "$(eventTypeFail)"
       }'
       $headers
       $json
