@@ -18,8 +18,9 @@ jobs:
       $Id = $(git rev-parse HEAD)
       Write-Output "$Id"
       $hashId = $Id.Remove($Id.Length – 34)
-      Write-Host "##vso[task.setvariable variable=commitId]$hashId"
+      Write-Host "##vso[task.setvariable variable=commitId;isOutput=true]]$hashId"
     displayName: 'Getting Commit Id'
+    name: Id
 
   - powershell: |
       Write-Host "$(commitId)"
@@ -80,6 +81,9 @@ jobs:
 - job: Failed
   dependsOn: Demo
   condition: failed()
+
+  variables:
+    varId: dependencies.Demo.outputs['Id.commitId'] 
   steps:
   - powershell: |
       $headers = @{
@@ -90,7 +94,7 @@ jobs:
           "projectKey": "$(projectKey)",
           "environmentKey": "$(environmentKey)",
           "applicationKey": "$(applicationKey)",
-          "version": "$(commitId)",
+          "version": "$(varId)",
           "eventType": "$(eventTypeStrt)"
       }'
       $headers
