@@ -48,6 +48,13 @@ jobs:
       Start-Sleep -Seconds 30
     displayName: 'PowerShell Script'
 
+  - powershell: |
+      Write-Output 'Before exception thrown'
+      throw "This is an error."
+      Write-Output 'After exception thrown'
+    displayName: 'PowerShell Script'
+    retryCountOnTaskFailure: 3
+
   - script: echo Hello, world!
     displayName: 'Run a one-line script'
 
@@ -55,10 +62,6 @@ jobs:
       echo Add other tasks to build, test, and deploy your project.
       echo See https://aka.ms/yaml
     displayName: 'Run a multi-line script'
-
-  - bash: $(exitCode)
-    displayName: Fail build if partially successful
-    condition: eq(variables['Agent.JobStatus'], 'SucceededWithIssues')
   
   - powershell: |
       Start-Sleep -Seconds 120
