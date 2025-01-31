@@ -99,6 +99,8 @@ jobs:
           "version": "$(varId)",
           "eventType": "$(eventTypeFail)"
       }'
+      $headers
+      $json
       $response = Invoke-WebRequest -Uri "$(uri)" -Method 'POST' -Body $json -Headers $headers
       write-output "Status Code : " $response.statuscode
     displayName: 'Deployment Failed Script'
