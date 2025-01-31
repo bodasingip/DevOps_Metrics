@@ -5,6 +5,8 @@ parameters:
 
 jobs:
 - deployment: Demo
+  displayName: Deploy test
+  environment: dev
   strategy:
     runOnce:
       deploy:
