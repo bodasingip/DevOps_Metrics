@@ -1,0 +1,119 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger: none
+
+pool:
+  vmImage: windows-latest
+
+parameters:
+- name: failed
+  displayName: Run Failed Deployment?
+  type: boolean
+  default: false
+
+variables:
+- group: LaunchDarkly-VG
+
+jobs:
+- job: Demo
+  steps:
+  - powershell: |
+      $Id = $(git rev-parse HEAD)
+      Write-Output "$Id"
+      $hashId = $Id.Remove($Id.Length – 34)
+      Write-Host "##vso[task.setvariable variable=commitId;isOutput=true]$hashId"
+    displayName: 'Getting Commit Id'
+    name: Id
+
+  - powershell: |
+      Write-Host "$(Id.commitId)"
+    displayName: 'CommitId Viewing'
+
+  - powershell: |
+      $headers = @{
+        "Authorization" = "$(apiKeyLD)"
+        "Content-Type" = "application/json"
+      }
+      $json = '{
+          "projectKey": "$(projectKey)",
+          "environmentKey": "$(environmentKey)",
+          "applicationKey": "$(applicationKey)",
+          "version": "$(Id.commitId)",
+          "eventType": "$(eventTypeStrt)"
+      }'
+      $headers
+      $json
+      $response = Invoke-WebRequest -Uri "$(uri)" -Method 'POST' -Body $json -Headers $headers
+      write-output "Status Code : " $response.statuscode
+    displayName: 'Deployment Started Script'
+
+  - powershell: |
+      Start-Sleep -Seconds 30
+    displayName: 'Sleep 30 Seconds'
+    condition: eq(${{ parameters.failed }}, true)
+
+  - powershell: |
+      Write-Output 'Before exception thrown'
+      throw "This is an error."
+      Write-Output 'After exception thrown'
+    displayName: 'Failed Condition'
+    retryCountOnTaskFailure: 3
+    condition: eq(${{ parameters.failed }}, true)
+
+  - script: echo Hello, world!
+    displayName: 'Run a one-line script'
+
+  - script: |
+      echo Add other tasks to build, test, and deploy your project.
+      echo See https://aka.ms/yaml
+    displayName: 'Run a multi-line script'
+  
+  - powershell: |
+      Start-Sleep -Seconds 120
+    displayName: 'Sleep 120 Seconds'
+
+  - powershell: |
+      $headers = @{
+        "Authorization" = "$(apiKeyLD)"
+        "Content-Type" = "application/json"
+      }
+      $json = '{
+          "projectKey": "$(projectKey)",
+          "environmentKey": "$(environmentKey)",
+          "applicationKey": "$(applicationKey)",
+          "version": "$(Id.commitId)",
+          "eventType": "$(eventTypeFinish)"
+      }'
+      $headers
+      $json
+      $response = Invoke-WebRequest -Uri "$(uri)" -Method 'POST' -Body $json -Headers $headers
+      write-output "Status Code : " $response.statuscode
+    displayName: 'Deployment Finished Script'
+
+- job: Failed
+  dependsOn: Demo
+  condition: failed()
+
+  variables:
+    varId: $[ dependencies.Demo.outputs['Id.commitId'] ]
+  steps:
+  - powershell: |
+      $headers = @{
+        "Authorization" = "$(apiKeyLD)"
+        "Content-Type" = "application/json"
+      }
+      $json = '{
+          "projectKey": "$(projectKey)",
+          "environmentKey": "$(environmentKey)",
+          "applicationKey": "$(applicationKey)",
+          "version": "$(varId)",
+          "eventType": "$(eventTypeFail)"
+      }'
+      $headers
+      $json
+      $response = Invoke-WebRequest -Uri "$(uri)" -Method 'POST' -Body $json -Headers $headers
+      write-output "Status Code : " $response.statuscode
+    displayName: 'Deployment Failed Script'
