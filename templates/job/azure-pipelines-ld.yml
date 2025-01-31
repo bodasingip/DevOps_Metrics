@@ -2,8 +2,6 @@ parameters:
 - name: failed
   type: boolean
   default: false
-- name: varId  # Define varId parameter
-  type: string
 
 jobs:
 - job: Demo
@@ -84,7 +82,10 @@ jobs:
 - job: Failed
   dependsOn: Demo
   condition: failed()
-
+  
+  variables:
+    varId: $[ dependencies.Demo.outputs['Demo.Id.commitId'] ]
+    
   steps:
   - powershell: |
       $headers = @{
