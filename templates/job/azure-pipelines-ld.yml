@@ -31,7 +31,7 @@ jobs:
           "projectKey": "$(projectKey)",
           "environmentKey": "$(environmentKey)",
           "applicationKey": "$(applicationKey)",
-          "version": "$(commitId)",
+          "version": "$(Id.commitId)",
           "eventType": "$(eventTypeStrt)"
       }'
       $response = Invoke-WebRequest -Uri "$(uri)" -Method 'POST' -Body $json -Headers $headers
@@ -72,7 +72,7 @@ jobs:
           "projectKey": "$(projectKey)",
           "environmentKey": "$(environmentKey)",
           "applicationKey": "$(applicationKey)",
-          "version": "$(commitId)",
+          "version": "$(Id.commitId)",
           "eventType": "$(eventTypeFinish)"
       }'
       $response = Invoke-WebRequest -Uri "$(uri)" -Method 'POST' -Body $json -Headers $headers
