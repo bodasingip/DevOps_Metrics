@@ -85,13 +85,17 @@ jobs:
   - checkout: self  # Checkout main repo
         
   - bash: |
-        cd $(Build.SourcesDirectory)/launchdarkly-test
-        CId=$(git rev-parse HEAD)
-        echo "Commit ID: $CId"
-        ChashId=${Id:0:6}  # Get only first 6 characters
-        echo "##vso[task.setvariable variable=HcommitId;isOutput=true]$ChashId"
+      cd $(Build.SourcesDirectory)/launchdarkly-test
+      CId=$(git rev-parse HEAD)
+      echo "Commit ID: $CId"
+      ChashId=${Id:0:6}  # Get only first 6 characters
+      echo "##vso[task.setvariable variable=HcommitId;isOutput=true]$ChashId"
     displayName: 'Getting Commit Id'
     name: CommitId
+    
+  - bash: |
+      echo "CommitId: $(CommitId.HcommitId)"
+    displayName: 'CommitId Viewing'
   - bash: |
       json="{
           \"projectKey\": \"$(projectKey)\",
