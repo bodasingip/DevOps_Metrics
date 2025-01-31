@@ -12,7 +12,6 @@ jobs:
       deploy:
         steps:
         - checkout: self  # Checkout main repo
-        - checkout: DevOps_Metrics  # Checkout another repo
         
         - bash: |
             cd $(Build.SourcesDirectory)/launchdarkly-test
@@ -81,17 +80,24 @@ jobs:
 - job: Failed
   dependsOn: Demo
   condition: failed()
-  
-  variables:
-    varId: $[ dependencies.Demo.outputs['Id.commitId'] ]
     
   steps:
+  - checkout: self  # Checkout main repo
+        
+  - bash: |
+        cd $(Build.SourcesDirectory)/launchdarkly-test
+        CId=$(git rev-parse HEAD)
+        echo "Commit ID: $CId"
+        ChashId=${Id:0:6}  # Get only first 6 characters
+        echo "##vso[task.setvariable variable=HcommitId;isOutput=true]$ChashId"
+    displayName: 'Getting Commit Id'
+    name: CommitId
   - bash: |
       json="{
           \"projectKey\": \"$(projectKey)\",
           \"environmentKey\": \"$(environmentKey)\",
           \"applicationKey\": \"$(applicationKey)\",
-          \"version\": \"$(varId)\",
+          \"version\": \"$(CommitId.HcommitId)\",
           \"eventType\": \"$(eventTypeFail)\"
       }"
       echo "$json"
