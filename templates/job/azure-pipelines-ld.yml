@@ -3,11 +3,6 @@ parameters:
   type: boolean
   default: false
 
-variables:
-- group: LaunchDarkly-VG
-- name: varId
-  value: $[ dependencies.Demo.outputs['Demo.Id.commitId'] ]
-
 jobs:
 - job: Demo
   steps:
