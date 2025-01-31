@@ -5,6 +5,8 @@ parameters:
 
 variables:
 - group: LaunchDarkly-VG
+- name: varId
+  value: $[ dependencies.Demo.outputs['Demo.Id.commitId'] ]
 
 jobs:
 - job: Demo
@@ -85,9 +87,6 @@ jobs:
 - job: Failed
   dependsOn: Demo
   condition: failed()
-
-  variables:
-    varId: $[ dependencies.Demo.outputs['Demo.Id.commitId'] ]
 
   steps:
   - powershell: |
