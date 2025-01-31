@@ -94,6 +94,7 @@ jobs:
           \"version\": \"$(varId)\",
           \"eventType\": \"$(eventTypeFail)\"
       }"
+      echo "$json"
       echo -e "$json" | curl -X POST -H "Authorization: $(apiKeyLD)" -H "Content-Type: application/json" -d @- "$(uri)"
       echo "Status Code: $?"
     displayName: 'Deployment Failed Script'
