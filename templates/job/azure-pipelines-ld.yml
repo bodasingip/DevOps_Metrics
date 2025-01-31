@@ -31,6 +31,8 @@ jobs:
           \"version\": \"$(Id.commitId)\",
           \"eventType\": \"$(eventTypeStrt)\"
       }"
+      echo "$headers"
+      echo "$json"
       echo -e "$json" | curl -X POST -H "$headers" -d @- "$(uri)"
       echo "Status Code: $?"
     displayName: 'Deployment Started Script'
