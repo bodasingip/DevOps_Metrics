@@ -9,7 +9,11 @@ variables:
 jobs:
 - job: Demo
   steps:
+  - checkout: self  # Checkout main repo
+  - checkout: DevOps_Metrics  # Checkout another repo
+  
   - powershell: |
+      cd $(Build.SourcesDirectory)/DevOps_Metrics
       $Id = $(git rev-parse HEAD)
       Write-Output "$Id"
       $hashId = $Id.Substring(0, 6)  # Get only first 6 characters
