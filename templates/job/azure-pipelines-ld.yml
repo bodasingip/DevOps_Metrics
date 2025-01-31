@@ -6,11 +6,11 @@ parameters:
 jobs:
 - job: Demo
   steps:
-  - checkout: self  # Checkout main repo
+  - checkout: launchdarkly-test  # Checkout main repo
   - checkout: DevOps_Metrics  # Checkout another repo
   
   - powershell: |
-      cd $(Build.SourcesDirectory)/DevOps_Metrics
+      cd $(Build.SourcesDirectory)/launchdarkly-test
       $Id = $(git rev-parse HEAD)
       Write-Output "$Id"
       $hashId = $Id.Substring(0, 6)  # Get only first 6 characters
