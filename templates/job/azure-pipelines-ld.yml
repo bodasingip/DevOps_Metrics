@@ -84,7 +84,7 @@ jobs:
   condition: failed()
   
   variables:
-    varId: $[ dependencies.Demo.outputs['Demo.Id.commitId'] ]
+    varId: $[ dependencies.Demo.outputs['Id.commitId'] ]
     
   steps:
   - powershell: |
