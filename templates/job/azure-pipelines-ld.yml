@@ -19,7 +19,7 @@ jobs:
     name: Id
 
   - powershell: |
-      Write-Host "$(commitId)"
+      Write-Host "$(Id.commitId)"
     displayName: 'CommitId Viewing'
 
   - powershell: |
