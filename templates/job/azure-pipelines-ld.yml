@@ -41,7 +41,7 @@ jobs:
   - powershell: |
       Start-Sleep -Seconds 30
     displayName: 'Sleep 30 Seconds'
-    condition: eq(parameters.failed, true)
+    condition: eq(${{ parameters.failed }}, true)
 
   - powershell: |
       Write-Output 'Before exception thrown'
@@ -49,7 +49,7 @@ jobs:
       Write-Output 'After exception thrown'
     displayName: 'Failed Condition'
     retryCountOnTaskFailure: 3
-    condition: eq(parameters.failed, true)
+    condition: eq(${{ parameters.failed }}, true)
 
   - script: echo Hello, world!
     displayName: 'Run a one-line script'
