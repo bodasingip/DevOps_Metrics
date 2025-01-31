@@ -4,74 +4,77 @@ parameters:
   default: false
 
 jobs:
-- job: Demo
-  steps:
-  - checkout: self  # Checkout main repo
-  - checkout: DevOps_Metrics  # Checkout another repo
-  
-  - bash: |
-      cd $(Build.SourcesDirectory)/launchdarkly-test
-      Id=$(git rev-parse HEAD)
-      echo "Commit ID: $Id"
-      hashId=${Id:0:6}  # Get only first 6 characters
-      echo "##vso[task.setvariable variable=commitId;isOutput=true]$hashId"
-    displayName: 'Getting Commit Id'
-    name: Id
-
-  - bash: |
-      echo "CommitId: $(Id.commitId)"
-    displayName: 'CommitId Viewing'
-
-  - bash: |
-      json="{
-          \"projectKey\": \"$(projectKey)\",
-          \"environmentKey\": \"$(environmentKey)\",
-          \"applicationKey\": \"$(applicationKey)\",
-          \"version\": \"$(Id.commitId)\",
-          \"eventType\": \"$(eventTypeStrt)\"
-      }"
-      echo "$json"
-      echo -e "$json" | curl -X POST -H "Authorization: $(apiKeyLD)" -H "Content-Type: application/json" -d @- "$(uri)"
-      echo "Status Code: $?"
-    displayName: 'Deployment Started Script'
-
-  - bash: |
-      sleep 30
-    displayName: 'Sleep 30 Seconds'
-    condition: eq(${{ parameters.failed }}, true)
-
-  - bash: |
-      echo 'Before exception thrown'
-      exit 1  # Simulate failure
-      echo 'After exception thrown'
-    displayName: 'Failed Condition'
-    retryCountOnTaskFailure: 3
-    condition: eq(${{ parameters.failed }}, true)
-
-  - bash: |
-      echo "Hello, world!"
-    displayName: 'Run a one-line script'
-
-  - bash: |
-      echo "Add other tasks to build, test, and deploy your project."
-      echo "See https://aka.ms/yaml"
-    displayName: 'Run a multi-line script'
-  
-  - bash: |
-      sleep 120
-    displayName: 'Sleep 120 Seconds'
-
-  - bash: |
-      json="{
-          \"projectKey\": \"$(projectKey)\",
-          \"environmentKey\": \"$(environmentKey)\",
-          \"applicationKey\": \"$(applicationKey)\",
-          \"version\": \"$(Id.commitId)\",
-          \"eventType\": \"$(eventTypeFinish)\"
-      }"
-      echo -e "$json" | curl -X POST -H "Authorization: $(apiKeyLD)" -H "Content-Type: application/json" -d @- "$(uri)"
-      echo "Status Code: $?"
-    displayName: 'Deployment Finished Script'
+- deployment: Demo
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - checkout: self  # Checkout main repo
+        - checkout: DevOps_Metrics  # Checkout another repo
+        
+        - bash: |
+            cd $(Build.SourcesDirectory)/launchdarkly-test
+            Id=$(git rev-parse HEAD)
+            echo "Commit ID: $Id"
+            hashId=${Id:0:6}  # Get only first 6 characters
+            echo "##vso[task.setvariable variable=commitId;isOutput=true]$hashId"
+          displayName: 'Getting Commit Id'
+          name: Id
+      
+        - bash: |
+            echo "CommitId: $(Id.commitId)"
+          displayName: 'CommitId Viewing'
+      
+        - bash: |
+            json="{
+                \"projectKey\": \"$(projectKey)\",
+                \"environmentKey\": \"$(environmentKey)\",
+                \"applicationKey\": \"$(applicationKey)\",
+                \"version\": \"$(Id.commitId)\",
+                \"eventType\": \"$(eventTypeStrt)\"
+            }"
+            echo "$json"
+            echo -e "$json" | curl -X POST -H "Authorization: $(apiKeyLD)" -H "Content-Type: application/json" -d @- "$(uri)"
+            echo "Status Code: $?"
+          displayName: 'Deployment Started Script'
+      
+        - bash: |
+            sleep 30
+          displayName: 'Sleep 30 Seconds'
+          condition: eq(${{ parameters.failed }}, true)
+      
+        - bash: |
+            echo 'Before exception thrown'
+            exit 1  # Simulate failure
+            echo 'After exception thrown'
+          displayName: 'Failed Condition'
+          retryCountOnTaskFailure: 3
+          condition: eq(${{ parameters.failed }}, true)
+      
+        - bash: |
+            echo "Hello, world!"
+          displayName: 'Run a one-line script'
+      
+        - bash: |
+            echo "Add other tasks to build, test, and deploy your project."
+            echo "See https://aka.ms/yaml"
+          displayName: 'Run a multi-line script'
+        
+        - bash: |
+            sleep 120
+          displayName: 'Sleep 120 Seconds'
+      
+        - bash: |
+            json="{
+                \"projectKey\": \"$(projectKey)\",
+                \"environmentKey\": \"$(environmentKey)\",
+                \"applicationKey\": \"$(applicationKey)\",
+                \"version\": \"$(Id.commitId)\",
+                \"eventType\": \"$(eventTypeFinish)\"
+            }"
+            echo -e "$json" | curl -X POST -H "Authorization: $(apiKeyLD)" -H "Content-Type: application/json" -d @- "$(uri)"
+            echo "Status Code: $?"
+          displayName: 'Deployment Finished Script'
 
 - job: Failed
   dependsOn: Demo
