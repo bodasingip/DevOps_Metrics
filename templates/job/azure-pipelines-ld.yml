@@ -9,74 +9,69 @@ jobs:
   - checkout: self  # Checkout main repo
   - checkout: DevOps_Metrics  # Checkout another repo
   
-  - powershell: |
+  - bash: |
       cd $(Build.SourcesDirectory)/launchdarkly-test
-      $Id = $(git rev-parse HEAD)
-      Write-Output "$Id"
-      $hashId = $Id.Substring(0, 6)  # Get only first 6 characters
-      Write-Host "##vso[task.setvariable variable=commitId;isOutput=true]$hashId"
+      Id=$(git rev-parse HEAD)
+      echo "Commit ID: $Id"
+      hashId=${Id:0:6}  # Get only first 6 characters
+      echo "##vso[task.setvariable variable=commitId;isOutput=true]$hashId"
     displayName: 'Getting Commit Id'
     name: Id
 
-  - powershell: |
-      Write-Host "$(Id.commitId)"
+  - bash: |
+      echo "CommitId: $(Id.commitId)"
     displayName: 'CommitId Viewing'
 
-  - powershell: |
-      $headers = @{
-        "Authorization" = "$(apiKeyLD)"
-        "Content-Type" = "application/json"
-      }
-      $json = '{
-          "projectKey": "$(projectKey)",
-          "environmentKey": "$(environmentKey)",
-          "applicationKey": "$(applicationKey)",
-          "version": "$(Id.commitId)",
-          "eventType": "$(eventTypeStrt)"
-      }'
-      $response = Invoke-WebRequest -Uri "$(uri)" -Method 'POST' -Body $json -Headers $headers
-      write-output "Status Code : " $response.statuscode
+  - bash: |
+      headers="Authorization: $(apiKeyLD)\nContent-Type: application/json"
+      json="{
+          \"projectKey\": \"$(projectKey)\",
+          \"environmentKey\": \"$(environmentKey)\",
+          \"applicationKey\": \"$(applicationKey)\",
+          \"version\": \"$(Id.commitId)\",
+          \"eventType\": \"$(eventTypeStrt)\"
+      }"
+      echo -e "$json" | curl -X POST -H "$headers" -d @- "$(uri)"
+      echo "Status Code: $?"
     displayName: 'Deployment Started Script'
 
-  - powershell: |
-      Start-Sleep -Seconds 30
+  - bash: |
+      sleep 30
     displayName: 'Sleep 30 Seconds'
     condition: eq(${{ parameters.failed }}, true)
 
-  - powershell: |
-      Write-Output 'Before exception thrown'
-      throw "This is an error."
-      Write-Output 'After exception thrown'
+  - bash: |
+      echo 'Before exception thrown'
+      exit 1  # Simulate failure
+      echo 'After exception thrown'
     displayName: 'Failed Condition'
     retryCountOnTaskFailure: 3
     condition: eq(${{ parameters.failed }}, true)
 
-  - script: echo Hello, world!
+  - bash: |
+      echo "Hello, world!"
     displayName: 'Run a one-line script'
 
-  - script: |
-      echo Add other tasks to build, test, and deploy your project.
-      echo See https://aka.ms/yaml
+  - bash: |
+      echo "Add other tasks to build, test, and deploy your project."
+      echo "See https://aka.ms/yaml"
     displayName: 'Run a multi-line script'
   
-  - powershell: |
-      Start-Sleep -Seconds 120
+  - bash: |
+      sleep 120
     displayName: 'Sleep 120 Seconds'
 
-  - powershell: |
-      $headers = @{
-        "Authorization" = "$(apiKeyLD)"
-        "Content-Type" = "application/json"
-      }
-      $json = '{
-          "projectKey": "$(projectKey)",
-          "environmentKey": "$(environmentKey)",
-          "applicationKey": "$(applicationKey)",
-          "version": "$(Id.commitId)",
-          "eventType": "$(eventTypeFinish)"
-      }'
-      $response = Invoke-WebRequest -Uri "$(uri)" -Method 'POST' -Body $json -Headers $headers
-      write-output "Status Code : " $response.statuscode
+  - bash: |
+      headers="Authorization: $(apiKeyLD)\nContent-Type: application/json"
+      json="{
+          \"projectKey\": \"$(projectKey)\",
+          \"environmentKey\": \"$(environmentKey)\",
+          \"applicationKey\": \"$(applicationKey)\",
+          \"version\": \"$(Id.commitId)\",
+          \"eventType\": \"$(eventTypeFinish)\"
+      }"
+      echo -e "$json" | curl -X POST -H "$headers" -d @- "$(uri)"
+      echo "Status Code: $?"
     displayName: 'Deployment Finished Script'
 
 - job: Failed
@@ -87,20 +82,15 @@ jobs:
     varId: $[ dependencies.Demo.outputs['Id.commitId'] ]
     
   steps:
-  - powershell: |
-      $headers = @{
-        "Authorization" = "$(apiKeyLD)"
-        "Content-Type" = "application/json"
-      }
-      $json = '{
-          "projectKey": "$(projectKey)",
-          "environmentKey": "$(environmentKey)",
-          "applicationKey": "$(applicationKey)",
-          "version": "$(varId)",
-          "eventType": "$(eventTypeFail)"
-      }'
-      $headers
-      $json
-      $response = Invoke-WebRequest -Uri "$(uri)" -Method 'POST' -Body $json -Headers $headers
-      write-output "Status Code : " $response.statuscode
+  - bash: |
+      headers="Authorization: $(apiKeyLD)\nContent-Type: application/json"
+      json="{
+          \"projectKey\": \"$(projectKey)\",
+          \"environmentKey\": \"$(environmentKey)\",
+          \"applicationKey\": \"$(applicationKey)\",
+          \"version\": \"$(varId)\",
+          \"eventType\": \"$(eventTypeFail)\"
+      }"
+      echo -e "$json" | curl -X POST -H "$headers" -d @- "$(uri)"
+      echo "Status Code: $?"
     displayName: 'Deployment Failed Script'
