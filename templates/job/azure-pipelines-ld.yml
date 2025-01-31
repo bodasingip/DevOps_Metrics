@@ -2,6 +2,8 @@ parameters:
 - name: failed
   type: boolean
   default: false
+- name: varId  # Define varId parameter
+  type: string
 
 jobs:
 - job: Demo
