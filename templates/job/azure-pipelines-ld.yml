@@ -23,7 +23,6 @@ jobs:
     displayName: 'CommitId Viewing'
 
   - bash: |
-      headers="Authorization: $(apiKeyLD)\nContent-Type: application/json"
       json="{
           \"projectKey\": \"$(projectKey)\",
           \"environmentKey\": \"$(environmentKey)\",
@@ -31,9 +30,8 @@ jobs:
           \"version\": \"$(Id.commitId)\",
           \"eventType\": \"$(eventTypeStrt)\"
       }"
-      echo "$headers"
       echo "$json"
-      echo -e "$json" | curl -X POST -H "$headers" -d @- "$(uri)"
+      echo -e "$json" | curl -X POST -H "Authorization: $(apiKeyLD)" -H "Content-Type: application/json" -d @- "$(uri)"
       echo "Status Code: $?"
     displayName: 'Deployment Started Script'
 
