@@ -6,7 +6,7 @@ parameters:
 jobs:
 - job: Demo
   steps:
-  - checkout: launchdarkly-test  # Checkout main repo
+  - checkout: self  # Checkout main repo
   - checkout: DevOps_Metrics  # Checkout another repo
   
   - powershell: |
