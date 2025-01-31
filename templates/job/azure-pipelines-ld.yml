@@ -86,22 +86,22 @@ jobs:
         
   - bash: |
       cd $(Build.SourcesDirectory)/launchdarkly-test
-      CId=$(git rev-parse HEAD)
-      echo "Commit ID: $CId"
-      ChashId=${Id:0:6}  # Get only first 6 characters
-      echo "##vso[task.setvariable variable=HcommitId;isOutput=true]$ChashId"
+      CID=$(git rev-parse HEAD)
+      echo "Commit ID: $CID"
+      hid=${CID:0:6}  # Get only first 6 characters
+      echo "##vso[task.setvariable variable=HCID;isOutput=true]$hid"
     displayName: 'Getting Commit Id'
-    name: CommitId
+    name: Commit
     
   - bash: |
-      echo "CommitId: $(CommitId.HcommitId)"
+      echo "CommitId: $(Commit.HCID)"
     displayName: 'CommitId Viewing'
   - bash: |
       json="{
           \"projectKey\": \"$(projectKey)\",
           \"environmentKey\": \"$(environmentKey)\",
           \"applicationKey\": \"$(applicationKey)\",
-          \"version\": \"$(CommitId.HcommitId)\",
+          \"version\": \"$(Commit.HCID)\",
           \"eventType\": \"$(eventTypeFail)\"
       }"
       echo "$json"
